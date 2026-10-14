@@ -1,0 +1,69 @@
+#!/usr/bin/env node
+// Claude falso para testes da fábrica. Simula construtor e validador por cenário (id da tarefa = nome do worktree).
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+const args = process.argv.slice(2);
+fs.appendFileSync(process.env.FAKE_LOG || '/dev/null', JSON.stringify({ cwd: process.cwd(), args }) + '\n');
+
+if (args[0] === '--version') return console.log('2.1.300 (Claude Code, falso)');
+if (args[0] === 'auth') return console.log(JSON.stringify({ authMethod: 'claude.ai' }));
+
+const out = (o) => console.log(JSON.stringify({ type: 'result', subtype: 'success', is_error: false, num_turns: 3, total_cost_usd: 0.01, ...o }));
+const prompt = args[args.indexOf('-p') + 1] || '';
+
+// Validador
+if (args.includes('--json-schema')) {
+  const diff = fs.readFileSync('diff.patch', 'utf8');
+  const tarefa = fs.readFileSync('tarefa.md', 'utf8');
+  const cas = [...tarefa.matchAll(/\b(CA\d+)\b/g)].map((m) => m[1]);
+  if (process.env.FAKE_LIMIT_REVIEW) return out({ is_error: true, result: "You've hit your session limit · resets 3pm" });
+  const ruim = diff.includes('TODO-BUG');
+  return out({
+    result: 'ok',
+    session_id: 'rev',
+    structured_output: {
+      aprovado: !ruim,
+      resumo: ruim ? 'Há um marcador de bug.' : 'Implementa os critérios; testes de aceite cobrem todos.',
+      problemas: ruim ? [{ arquivo: 'src/mult.js', linha: 1, gravidade: 'bloqueia', problema: 'marcador TODO-BUG', correcao: 'remova' }] : [],
+      criterios: [...new Set(cas)].map((id) => ({ id, atendido: true })),
+    },
+  });
+}
+
+// Construtor
+const id = path.basename(process.cwd());
+const w = (f, s) => {
+  fs.mkdirSync(path.dirname(f), { recursive: true });
+  fs.writeFileSync(f, s);
+};
+const portaoFalhou = /Portão reprovou/.test(prompt);
+const revisaoFalhou = /Revisão|Problemas/.test(prompt);
+
+switch (id) {
+  case 'F-01':
+    w('src/soma.js', 'export const soma = (a, b) => a + b;\n');
+    break;
+  case 'F-02':
+    if (revisaoFalhou) w('src/mult.js', 'export const mult = (a, b) => a * b;\n');
+    else if (portaoFalhou) w('src/mult.js', '// TODO-BUG revisar\nexport const mult = (a, b) => a * b;\n');
+    else w('src/mult.js', 'export const mult = (a, b) => a + b;\n');
+    break;
+  case 'F-03':
+    if (portaoFalhou) execSync('git checkout -- README.md');
+    else fs.appendFileSync('README.md', '\nmexi onde não devia\n');
+    w('src/texto.js', "import { soma } from './soma.js';\nexport const descreve = (a, b) => `${a} + ${b} = ${soma(a, b)}`;\n");
+    break;
+  case 'F-04':
+    w('.factory-request.md', 'Preciso alterar src/soma.js para aceitar strings.\n');
+    break;
+  case 'F-06':
+  case 'F-07':
+    w(`src/${id}.js`, `export const v = '${id}-${Date.now()}';\n`);
+    break;
+  case 'F-05':
+    w('src/skip.js', 'export const x = 1;\n');
+    w('tests/unit/extra.test.mjs', "import test from 'node:test';\ntest.skip('pulado', () => {});\n");
+    break;
+}
+out({ result: `feito ${id}`, session_id: `sess-${id}` });

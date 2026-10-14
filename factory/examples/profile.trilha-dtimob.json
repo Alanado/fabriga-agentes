@@ -1,0 +1,61 @@
+{
+  "perfil": "pessoal",
+  "slots": 2,
+  "mainBranch": "main",
+  "worktreesDir": "../{repo}-worktrees",
+  "portStep": 100,
+  "env": {
+    "PAINEL_PORT": 4747,
+    "POSTGRES_PORT": 5432,
+    "API_MOB_PORT": 3000,
+    "WEB_MOB_PORT": 5173
+  },
+  "envExtra": {
+    "TRILHA_HOME": "{worktree}/.slot/trilha",
+    "TRILHA_WORKSPACE": "{worktree}/.slot/workspace"
+  },
+  "compose": {
+    "enabled": true,
+    "file": "docker-compose.yml",
+    "services": ["postgis"],
+    "resetEachTask": true
+  },
+  "setup": ["npm ci"],
+  "gate": {
+    "install": "npm ci",
+    "verify": "npm run verify",
+    "acceptance": "npx vitest run {files} --reporter=json --outputFile={report}",
+    "lintAcceptance": "npx eslint --no-ignore {files}",
+    "screenshotsDir": "test-results",
+    "alwaysForbidden": ["tests/acceptance/**", ".factory/**", ".claude/**", "CLAUDE.md", "docs/specs/**"]
+  },
+  "builder": {
+    "readDeny": [
+      ".env",
+      "**/.env",
+      ".env.local",
+      "**/.env.local",
+      ".env.development",
+      "**/.env.development",
+      ".env.production",
+      "**/.env.production",
+      ".env.test",
+      "**/.env.test",
+      ".env.*.local",
+      "**/.env.*.local",
+      ".confidencial.local",
+      "**/guia-do-mentor*"
+    ]
+  },
+  "limits": {
+    "gateRetries": 5,
+    "reviewRetries": 2,
+    "modelSwitches": 2,
+    "maxTurns": 80,
+    "agentTimeoutMin": 60
+  },
+  "review": {
+    "model": "opus",
+    "effort": "high"
+  }
+}

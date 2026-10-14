@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+// OpenCode falso: registra a chamada e implementa a tarefa pelo nome da pasta (cwd).
+const fs = require('fs');
+const path = require('path');
+const args = process.argv.slice(2);
+if (args[0] === '--version') return console.log('1.9.0 (falso)');
+const dir = process.cwd();
+fs.appendFileSync(process.env.FAKE_LOG || '/dev/null', JSON.stringify({ opencode: true, model: args[args.indexOf('--model') + 1], config: process.env.OPENCODE_CONFIG, PORT: process.env.PORT }) + '\n');
+if (process.env.FAKE_429 && !fs.existsSync('/tmp/fake429-done')) {
+  fs.writeFileSync('/tmp/fake429-done', '1');
+  console.error('Error: 429 Too Many Requests');
+  process.exit(1);
+}
+const id = path.basename(dir);
+fs.mkdirSync(path.join(dir, 'src'), { recursive: true });
+fs.writeFileSync(path.join(dir, 'src', `${id}.js`), `export const v = '${id}';\n`);
+console.log(JSON.stringify({ type: 'text', text: 'feito' }));

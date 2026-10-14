@@ -1,0 +1,13 @@
+{
+  "trabalho": {
+    "P": ["haiku", "sonnet"],
+    "M": ["sonnet"],
+    "G": ["sonnet"],
+    "effort": { "P": "low", "M": "medium", "G": "medium" }
+  },
+  "pessoal": {
+    "slot1": ["nvidia/moonshotai/kimi-k3", "nvidia/z-ai/glm-5.3", "nvidia/z-ai/glm-5.3-flash", "opencode/big-pickle"],
+    "slot2": ["nvidia/z-ai/glm-5.3", "nvidia/moonshotai/kimi-k3", "nvidia/deepseek-ai/deepseek-v4.1-flash", "zai/glm-4.7-flash"]
+  },
+  "_nota": "IDs do perfil pessoal mudam com frequência. Confira com 'opencode models nvidia' toda semana."
+}

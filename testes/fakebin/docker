@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "docker $* | COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME POSTGRES_PORT=$POSTGRES_PORT" >> "$FAKE_LOG.docker"
+[[ "$1 $2" == "compose version" ]] && echo "Docker Compose version v5 (falso)"
+exit 0

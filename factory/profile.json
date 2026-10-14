@@ -1,0 +1,35 @@
+{
+  "perfil": "trabalho",
+  "slots": 2,
+  "mainBranch": "main",
+  "worktreesDir": "../{repo}-worktrees",
+  "portStep": 100,
+  "env": {
+    "PORT": 3000
+  },
+  "envExtra": {},
+  "compose": {
+    "enabled": false,
+    "file": "docker-compose.yml",
+    "services": [],
+    "resetEachTask": true
+  },
+  "setup": ["npm ci"],
+  "gate": {
+    "install": "npm ci",
+    "verify": "npm run verify",
+    "acceptance": null,
+    "screenshotsDir": "test-results"
+  },
+  "limits": {
+    "gateRetries": 4,
+    "reviewRetries": 2,
+    "modelSwitches": 1,
+    "maxTurns": 60,
+    "agentTimeoutMin": 45
+  },
+  "review": {
+    "model": "opus",
+    "effort": "high"
+  }
+}
